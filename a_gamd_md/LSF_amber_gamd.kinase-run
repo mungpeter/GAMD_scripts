@@ -1,0 +1,144 @@
+#!/bin/csh
+
+#BSUB -L /bin/csh
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -B
+#BSUB -N
+#BSUB -u pmung@umich.edu
+#BSUB -J mek.1.CURRUN
+
+#BSUB -P acc_schlea02a
+#BSUB -q gpu
+#BSUB -W 12:00		# Wall clock limit for job
+#BSUB -n 1		# Number of CPU cores required
+#BSUB -R "v100"         # GPU: p100 or v100
+#BSUB -R "span[ptile=1]"		# Number of CPU run in parallel
+#BSUB -R "rusage[ngpus_excl_p=1]"	# Number of GPU run in parallel
+
+## For Minerva Cluster Use
+module use /hpc/packages/minerva-centos7/modulefiles
+module load amber/18-tools-18-v100
+
+##########################################################################
+# set shell variables (job name, running, working directories, etc)
+set homedir = /hpc/users/ungp01/1_kinase/a_gamd/9_mek
+set script  = $homedir/explicit_input-peptide
+
+set mainfld = 1_mek_3wig
+set subfld  = 1_run
+set scrhdir = "/sc/hydra/scratch/ungp01/$mainfld"
+set rundir  = "$subfld"
+set outdir  = "$subfld"
+
+set top      = mek_3wig.prmtop
+set startRst = "$outdir/PRMCRD"
+
+set ntwprt   = 4554     # last atom number to be saved in traj output
+
+
+##########################################################################
+#Set procedure to run
+set run = ( 5_gamd )
+set runStt  =  1
+set runEnd  =  1
+set step    =  1
+set seed    = -1
+
+#### For iterational PBS running ONLY ####
+@ r = CURRUN
+
+########## Setup GaMD restart ############
+if ($r == 1) then
+  set irest = '0'
+  set ntx   = '1'
+else
+  set irest = '1'
+  set ntx   = '5'
+endif
+
+##########################################################################
+# Copy input files from $workdir to $rundir
+if (! -e $scrhdir) then
+  mkdir $scrhdir
+endif
+cd $scrhdir
+if (! -e $rundir) then
+  mkdir $rundir
+endif
+cd $rundir
+echo `pwd`
+
+set readTop = "$homedir/$mainfld/$top"
+set readCrd = "$homedir/$mainfld/$startRst"
+
+##########################################
+
+  @ j = $runStt
+  set runName = $run[$j]
+  echo $runName
+  set prevRun = $readCrd
+
+#  setenv CUDA_VISIBLE_DEVICES $gpuNum
+
+while ($j <= $runEnd)
+
+    if ($step == 1) then
+      # Check step, first production is restart with no velocity
+      echo " - Copying $runName.in to working directory"
+      sed "s/XNTXX/$ntx/" $script/$runName.in | \
+      sed "s/XIRESTX/$irest/" | \
+      sed "s/XNTWPRTX/$ntwprt/"  > ./$runName.$r.in
+    else
+      cp $homedir/$mainfld/$outdir/$runName.$step.in .
+    endif
+
+    # Confirm gamd_restart.dat is there before running GaMD production runs
+    if (-e $homedir/$mainfld/$outdir/gamd-restart.dat) then
+      echo " - Use 'gamd-restart.dat' found in $homedir/$mainfld/$outdir -"
+      cp $homedir/$mainfld/$outdir/gamd-restart.dat .
+    else
+      echo " - ERROR: No GaMD Param file 'gamd-restart.dat'. Exit - "
+      exit
+    endif
+
+    nohup                             \
+       pmemd.cuda_SPFP -O             \
+        -i $runName.$r.in             \
+        -o $runName.$r.out            \
+        -p $readTop -c $prevRun       \
+        -r $runName.$r.rst            \
+        -x $runName.$r.nc             \
+        -ref $prevRun
+
+    echo " -- Finished running $runName"
+    set prevRun = $runName.$r.rst
+    echo "  ## Set previous run to: $prevRun ##"
+
+    cp $runName.$r.rst $homedir/$mainfld/$outdir
+    mv gamd.log        $runName.$r.gamd.log
+    bzip2 $runName.$r.gamd.log $runName.$r.out
+    
+
+### Run MMPBSA and structural analysis ###
+#  if ($j == $runEnd) then
+#    cd result
+#    qsub mmpbsa.lsf
+#  endif
+#### For iterational PBS running ONLY ####
+
+  @ r = $r + 1
+  cd $homedir
+  echo " Current directory: `pwd`"
+  ./rerun_amber.csh REFFILE $prevRun REPEAT $r
+
+##########################################
+
+    @ j = $j + 1
+    set runName = $run[$j]
+    set runIn = $run[$j]
+    
+end
+
+exit
+

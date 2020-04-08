@@ -1,0 +1,5 @@
+trajin 4C_production3f.crd 1 1000 1
+center :1-198 mass origin
+image center origin familiar com :1-198
+rms first mass out test.txt :1-198@CA
+                        

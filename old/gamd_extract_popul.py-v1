@@ -1,0 +1,146 @@
+#!/usr/bin/python
+
+import sys
+import math
+import numpy as np
+from pathos import multiprocessing
+from argparse import ArgumentParser
+
+##########################################################################
+#
+#  Peter M.U. Ung @ Yale/MSSM
+#
+#  v.1  19.04.03
+#
+#  print out the % population in trajectory in the ranges defined by X-Y axis
+#  where the data is in 2D-matrix, and bin is defined by the upper end of
+#  the range, i.e. range is [0,1,2,3] but data is binned in [0-1, 1-2, 2-3]
+#
+##########################################################################
+def main():
+
+  args    = cmdlineparse()
+
+  data = LoadFileToArray(args.input, args.col)
+
+  max_x = np.ceil(np.amax(data[:,0]))
+  min_x = np.floor(np.amin(data[:,0]))
+  binsX, discX = assignbinsX([min_x,max_x], args)  ## Default bin size
+
+  max_y = np.ceil(np.amax(data[:,1]))
+  min_y = np.floor(np.amin(data[:,1]))
+  binsY, discY = assignbinsY([min_y,max_y], args)  ## Default bin size
+
+  hist2, newedgesX, newedgesY = np.histogram2d(data[:,0], data[:,1], 
+                                       bins = (binsX, binsY), weights=None)
+  popul = hist2*100/np.sum(hist2)   # population in %
+
+  if args.auto:
+    db = ClusterMethod(method='dbscan', ).fit(data)
+    Labels = db.labels_
+  else:
+
+    xrange = np.array(args.x_range, dtype=np.float32)
+    yrange = np.array(args.y_range, dtype=np.float32)
+    # index number in the list of newedges
+    row = [i for i,x in enumerate(newedgesX) if x>=xrange[0] and x<xrange[1]]
+    col = [i for i,y in enumerate(newedgesY) if y>=yrange[0] and y<yrange[1]]
+    print('% population: {0:.2f}'.format(np.sum(popul[row[0]:row[-1]+1,col[0]:col[-1]+1])))
+
+
+##########################################################################
+# Load data files with numpy, automatically skip comment lines with '#', 
+# convert input to array of columns; use specified column as input 
+#skip = 1    # in case too much data, slice the data array by this number
+def LoadFileToArray( files, col, skip=1 ):
+
+    mpi = multiprocessing.Pool(processes = 2)
+    obj = LoadData(col=col, skip=skip)
+    Tmp = mpi.map(obj, files)
+    mpi.close()
+    mpi.join()
+
+    if len(Tmp[0]) != len(Tmp[1]):
+        sys.exit('## ERROR: files do not match in length:\n{0}\t{1}\n{2}\t{3}'.format(
+                 files[0], len(Tmp[0]), files[1], len(Tmp[1])))
+
+    loaded = np.array(list(zip(Tmp[0], Tmp[1])))
+    return loaded
+
+##########################################################################
+class LoadData(object):
+  def __init__( self, col='', skip='' ):
+    self.col  = col
+    self.skip = skip
+  
+  def __call__( self, infile ):
+    return self.load_txt( infile )
+  
+  # default 'comment' of np.loadtxt = '#'
+  def load_txt( self, infile ):
+    load = np.loadtxt(infile, usecols=[int(self.col)-1])[::self.skip]
+    print("DATA LOADED:\t{0}\t{1} lines".format(infile, len(load)))
+    return load
+
+##########################################################################
+def assignbinsX(dim, args):
+    minimum = float(dim[0])
+    maximum = float(dim[1])
+    if args.disc:
+        discX = float(args.disc)
+    else :
+        discX = 1
+    binsX = np.arange(minimum, (maximum+discX), discX)
+    return binsX, discX
+
+##########################################################################
+def assignbinsY(dim, args):
+    minimum = float(dim[0])
+    maximum = float(dim[1])
+    if args.disc:
+        discY = float(args.disc)
+    else :
+        discY = 1
+    binsY =np.arange(minimum,(maximum+discY), discY)
+    return binsY, discY
+
+##########################################################################
+# DBSCAN and MeanShift are the only 2 from sklearn that do not need predefined
+# cluster number. Birch can run without input cluster number.
+# DBSCAN is not that stable and produce random clusters from time to time. 
+# MeanShift produces meaningful clusters that correspond to occupancy map.
+# Birch generates incorrect clusters
+### Ultimately, only use MeanShift clustering even though it is slower.
+def ClusterMethod( method='meanshift', bandwidth=2.0 ):
+  if method == 'meanshift':
+    algorithm = MeanShift(bandwidth=bandwidth, cluster_all=True, n_jobs=-1)
+  if method == 'dbscan':
+    from sklearn.cluster import DBSCAN
+    algorithm = DBSCAN( min_samples=5, n_jobs=-1)
+
+  return(algorithm)
+
+##########################################################################
+def cmdlineparse():
+  p = ArgumentParser(description="command line arguments")
+  p.add_argument("-in", dest="input", required=True, nargs="+",
+                 help="input files", metavar="<X-input Y-input>")
+  p.add_argument("-bin", dest="disc", required=True,
+                 help="bin size", metavar="<bin size>")
+  p.add_argument('-col', dest='col', required=True,
+                 help='column in file to read', metavar='<column>')
+
+  p.add_argument('-auto', dest='auto', required=False,
+                 help='Automatic cluster detection', action='store_true')
+
+  p.add_argument("-xrange", dest="x_range", required=True, nargs='+',
+                 help="Range of X-dimension", metavar="<xmin xmax>")
+  p.add_argument("-yrange", dest="y_range", required=True, nargs='+',
+                 help="Range of Y-dimension", metavar="<ymin ymax>")
+  
+  args = p.parse_args()
+  return args
+
+##########################################################################
+if __name__ == '__main__':
+  main()

@@ -1,0 +1,4 @@
+# x-range y-range x-label y-label
+fgf21-v16-s2-cp.all-half.204-208.rmsd.txt.bz2 fgf21-v16-s2-cp.all-half.dist_p205-w208.txt.bz2 204-208.rmsd dist_p205-w208
+fgf21-v16-s2-cp.all-half.204-208.rmsd.txt.bz2 fgf21-v16-s2-cp.all-half.dist_s204-w207.txt.bz2 204-208.rmsd dist_s204-w207
+fgf21-v16-s2-cp.all-half.204-208.rmsd.txt.bz2 fgf21-v16-s2-cp.all-half.sb_w203-w208.txt.bz2 204-208.rmsd sb_w203-w208

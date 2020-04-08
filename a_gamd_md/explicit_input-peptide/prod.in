@@ -1,0 +1,37 @@
+Production run - NVT
+ &cntrl
+  imin = 0, 
+  irest = 1, 
+  ntx = 5,   
+
+  nstlim = 2500000, 
+  dt = 0.002,
+  
+  ntwe = 0, 
+  ntwx = 2500, 
+  ntwr = 2500, 
+  ntpr = 2500, 
+  ntwv = 0,  
+  iwrap = 1,
+
+  ntt = 3, 
+  gamma_ln = 1.0,
+  tempi = 310.0,
+  temp0 = 310.0,
+  ig = -1,
+
+  cut = 10.0, 
+  ntb = 1, 
+  ntc = 2, ntf = 2, 
+
+ / 
+
+  Minimizer off
+  Restart run, use x and v data
+  Frequency of data print out
+  Anderson thermostat, initial temp, bath temp
+  Setting parameters for VDW, electrostatic, dielec and NB cutoff
+  Constant volume PBC, isotropic scaling, constrain bonds with H, ignore interactions with H
+  Randomize seed
+  No. of md runs with 2fs timstep, total 5ns
+  write out every 4ps

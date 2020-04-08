@@ -1,0 +1,24 @@
+Solvent and ion Minimization 
+ &cntrl  
+  imin = 1, 		! run minimization
+  maxcyc = 10000,	! maximum minimization cycle allowed
+  ncyc = 500,		! steepest descent cycle, conjuagte gradient after
+
+  igb = 0,		! Generalized Born: None=0
+  cut = 10.0, 		! Long-range interaction cutoff
+  ntb = 1, 		! constant volume periodic boundaries
+
+  ntr = 1,		! retrain specific atoms in restraintmask
+
+  restraintmask ='!@H=&:ACE,NME,ALA,ARG,HI=,LYS,AS=,GL=,SER,THR,CYS,CYX,GLY,PRO,VAL,ILE,LEU,MET,PHE,TYR,TRP,TPO,PTR,SEP,AP=,CY=,ZN=',
+  restraint_wt  = 50,
+ /
+
+  #Activate minimizer
+  #Set explicit solvent model (turn-off GB implicit solvent)
+  #Set NB cutoff to 10A
+  #5000 steps for SD + CG
+  #250 steps for SD
+  #Constant volume PBC used
+  #Restrain protein with 500kcal/mol force for PROTEIN
+

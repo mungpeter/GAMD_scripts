@@ -1,0 +1,12 @@
+Initial Minimization on Whole System
+ &cntrl 
+  imin = 1, 
+  igb = 0,
+  cut = 10.0, 
+  maxcyc = 5000, 
+  ncyc = 250, 
+  ntb = 1, 
+ /
+
+  #Minimize w/o GB implicit, NB cut-off at 10, with constant V PBC
+  #For entire system

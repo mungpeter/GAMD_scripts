@@ -1,0 +1,35 @@
+Restrained Heating Dynamics
+ &cntrl
+  imin = 0, 
+  irest = 0, 		! restart simulation: do not restart=0
+  ntx = 1,		! coordinates, no velocities
+
+  nstlim = 100000,      ! 200ps
+  dt = 0.002,
+
+  ntwe = 0, 
+  ntwx = 5000, 
+  ntwr = 5000, 
+  ntpr = 5000,
+
+  ntt = 1, 		! thermostat: weak-coupling 
+  tempi =  10,
+  temp0 = 110,
+
+  cut = 10.0,
+  ntb = 1, 		! constant volume
+  ntc = 2, ntf = 2,	! SHAKE: NTC=NTF=2 for TIP3P
+
+  ntr = 1, 		! restraints on specific atoms
+  restraintmask = '!@H=&:ACE,NME,ALA,ARG,HI=,LYS,AS=,GL=,SER,THR,CYS,CYX,GLY,PRO,VAL,ILE,LEU,MET,PHE,TYR,TRP,TPO,PTR,SEP,AP=,CY=,ZN=',
+  restraint_WT = 10,
+ /
+
+   #Minimizer off
+   #No restart, read x values only
+   #Frequency of data printouts at 500 timesteps
+   #Weak temp coupling algo, initial temp and bath temp
+   #Paramters governing VDW, electrostatic, dielec (all at defaults), NB cutoff
+   #Constant volume PBC, Constrain bonds involving H, ignore interactions involving H
+   #MD steps, 2fs timestep
+   #Activate flag for restraints, adding 10kcal/mol restraints for PROTEIN

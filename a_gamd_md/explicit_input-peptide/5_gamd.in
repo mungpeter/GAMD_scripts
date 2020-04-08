@@ -1,0 +1,53 @@
+&cntrl
+  irest     = XIRESTX,	! restart of MD: new=1, old=0
+  ntx       = XNTXX,	! inpcrd has no velocity
+
+  ! SHAKE
+  ntc       = 2, 	! constrain bonds containing hydrogen
+  ntf       = 2, 	! do not calculate forces of bonds containing hydrogen
+
+  ntb       = 1,	! constant volume periodic boundaries NV(T)
+
+  ! Potential energy control
+  cut       = 10.0,	! long-range nonbonded cutoff, vdw and Eward electro
+
+  ! Temperature control
+  ntt       = 3, 	! thermostat: Langevin
+  gamma_ln  = 1,	! collision frequency, default=0, usually 2-5
+  temp0     = 310.0, 	! initial temperature 
+  tempi     = 310.0,	! final temperature
+  ig        = -1,	! seed generation: random=-1
+
+  ! Control information printout
+  ntwprt    = XNTWPRTX,	! first set of atoms to be written to trajectory (all=0)
+
+  ntwx      =     1000,	! print coordinates every x steps to Traj file       (2ps)
+  ntwr      =    50000,	! print coordinates every x steps to Restart file  (100ps)
+  ntpr      =     5000,	! print MD info     every x steps to mdout, mdinfo  (10ps)
+  iwrap     = 1,	! wrap coordinates when printing to same unit cell
+
+  ! Control GaMD running
+  igamd     = 3,	! boost potential: 3=dual boost, dihral+pot_eng
+  iE        = 1,	! threshold energy: 1=lower bound, 2=upper bound
+  irest_gamd= 1,	! flag to restart GaMD: 0=new, 1=restart simulation
+
+  ntave     =   100000,	! smoothing window for force parameters (4-5x N atoms)
+                        ! 'ntcmd' and 'nteb' be multiples of 'ntave'
+
+  ntcmdprep =        0,	! cMD equilibration: no force parameters (0.4ns)
+  ntcmd     =        0,	! cMD for force parameters (0 if restart)
+
+  ntebprep  =        0,	! GaMD pre-equilibrate: apply force parameters (0.4ns)
+  nteb      =        0,	! GaMD equilibrate: update force parameters ()
+
+  nstlim    = 25000000,	! GaMD production only (50ns)
+  dt        = 0.002,	! time step
+
+
+  sigma0P   = 6.0, 	! upper limit of total potential boost stdev
+  sigma0D   = 6.0,	! upper limit of dihedral potential boost stdev 
+
+&end
+
+! NVT at 310K, Langevin thermostat, SHAKE ok, long-range cutoff 10 A,
+! 

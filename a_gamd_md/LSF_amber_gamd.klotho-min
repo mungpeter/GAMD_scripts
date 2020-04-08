@@ -1,0 +1,145 @@
+#!/bin/csh
+
+#BSUB -L /bin/csh
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -B
+#BSUB -N
+#BSUB -u peter.ung@mssm.edu
+#BSUB -J f-21.min
+
+#BSUB -P acc_schlea02a
+#BSUB -q gpu
+#BSUB -W 36:00          # Wall clock limit for job
+#BSUB -n 1              # Number of CPU cores required
+#BSUB -R "span[ptile=1]"        # Run [ptile] number of MPI task per node
+#BSUB -R "v100"          # Specify to use 'GPU': p100 or v100
+#BSUB -R "rusage[ngpus_excl_p=1]" # Number of GPU in parallel run
+
+## For Minerva Cluster Use
+module use /hpc/packages/minerva-centos7/modulefiles
+module load amber/18-tools-18-v100
+
+##########################################################################
+# set shell variables (job name, running, working directories, etc)
+set homedir = /hpc/users/ungp01/5_klb/3_MD/2_klb_fgf21
+set script  = $homedir/explicit_input-peptide
+
+set mainfld = 2_f-fgf21
+set subfld  = 1_run
+
+set scrhdir = "/sc/hydra/scratch/ungp01/$mainfld"
+set rundir  = "$subfld"
+set outdir  = "$subfld"
+
+set lsfNext = LSF_amber_gamd.klotho-run
+
+set top      = klb-f_fgf21.prmtop
+set startRst = klb-f_fgf21.prmcrd
+#set startRst = $outdir/2D_heating.1.rst
+
+set ntwprt   = 15104    # last atom number to be saved in traj output
+set part     = 6	# number of 50ns segment
+
+##########################################################################
+#Set procedure to run
+set run = ( 1A_solvmin 1B_allmin  \
+            2A_heating 2B_heating 2C_heating 2D_heating \
+            3A_equilibrate 3B_equilibrate 3C_equilibrate \
+            3D_equilibrate 3E_equilibrate 4_gamd_init )
+set runStt  =  1
+set runEnd  = 12
+set step    =  1
+set seed    = -1
+
+##########################################################################
+# Copy input files from $homedir to $rundir
+if (! -e $homedir/$mainfld/$outdir) then
+  mkdir $homedir/$mainfld/$outdir
+endif
+if (! -e $scrhdir) then
+  mkdir $scrhdir
+endif
+cd $scrhdir
+if (! -e $rundir) then
+  mkdir $rundir
+endif
+cd $rundir
+echo `pwd`
+
+set readTop = "$homedir/$mainfld/$top"
+set readCrd = "$homedir/$mainfld/$startRst"
+
+
+  @ j = $runStt
+  set runName = "$run[$j]"
+  echo $runName
+  set prevRun = "$readCrd"
+
+
+#  setenv CUDA_VISIBLE_DEVICES $gpuNum
+
+  while ($j <= $runEnd)
+
+    if ($step == 1) then
+      echo " - Copying $runName.in to working directory"
+      sed "s/XNTWPRTX/$ntwprt/" $script/$runName.in > ./$runName.$step.in
+    else
+      cp $homedir/$mainfld/$outdir/$runName.$step.in .
+    endif
+
+    nohup                                \
+       pmemd.cuda_SPFP -O                \
+        -i $runName.$step.in             \
+        -o $runName.$step.out            \
+        -p $readTop -c $prevRun          \
+        -r $runName.$step.rst            \
+        -x $runName.$step.nc             \
+        -ref $prevRun
+
+    cp $runName.$step.rst $homedir/$mainfld/$outdir
+ 
+    echo " -- Finished running $runName.$step"
+    set prevRun = "$runName.$step.rst"
+    echo "  ## Set 'Previous Run' to: $prevRun ##"
+
+    # Check GaMD preparation result    
+    if ($runName == '4_gamd_init' && -e gamd.log) then
+      mv gamd.log $runName.$step.gamd.log    
+      bzip2       $runName.$step.gamd.log $runName.$step.out
+    endif
+    if ($runName == '4_gamd_init' && -e gamd-restart.dat) then
+      cp gamd-restart.dat      $homedir/$mainfld/$outdir
+      echo " - Successfully completed initial GaMD and generated parameters -"
+    else
+      echo " ERROR: GaMD not completed. No 'gamd-restart.dat' file -"
+    endif
+
+    @ j = $j + 1
+    if ($j > $runEnd) then
+      echo " Finished $runEnd Runs. Break"
+    else
+      set runName = "$run[$j]"
+      set runIn   = "$run[$j]"
+      echo " Going to do $j of $runEnd"
+      echo " Set New Run to $runName"
+    endif
+
+    ## Run another track
+    if ($runName == '3A_equilibrate') then
+      mkdir $homedir/$mainfld/2_run
+      cp 2D_heating.1.rst $homedir/$mainfld/2_run
+      qsub $homedir/amber_gamd.16.kla-min2
+    endif
+
+  end
+
+
+  cd $homedir
+  echo " Current Directory: `pwd`"
+  echo " restart file: $runName"
+  ./rerun_amber.csh $lsfNext $runName.$step.rst $part 1
+  echo " Now Running GaMD preparation step"
+
+exit
+

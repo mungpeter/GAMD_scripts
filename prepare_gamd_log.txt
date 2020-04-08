@@ -1,0 +1,5 @@
+## amber14 or later
+## need to convert data in gamd.log into formatted data
+
+awk 'NR%1==0' gamd.log | awk '{print ($8+$7)/(0.0019872036*310)" " $2 " " ($8+$7)}' > gamd.weights.dat
+

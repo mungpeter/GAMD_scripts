@@ -1,0 +1,4 @@
+trajin 2D_heating4.rst
+center :1-198 mass origin
+image center origin familiar com :1-198
+trajout IniFrame.pdb pdb append
