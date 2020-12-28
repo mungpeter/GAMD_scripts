@@ -1,0 +1,14 @@
+
+/home/pmung/Dropbox/9_scripts/2_MD/1_amber/4_gamd/2_gamd_reweight_run2d.py \
+  -inp run_gamd_landscapes.list-special3 \
+  -col 2 \
+  -gamd "*gamd.weights.dat.bz2" \
+  -Emax 4 \
+  -Pmax 4 \
+  -Xbin 0.25 \
+  -Xdim 0 4 \
+  -Ydim 1 10 \
+  -pwd `pwd` \
+  -smooth 1.2 \
+  -contour 4 \
+  -img eps

@@ -1,0 +1,58 @@
+parm      ../../../1_setup/5_fgf21-mutant/1_fgf21-v16/fgf21-v16-s2-cp.prot.prmtop
+reference ../../../1_setup/5_fgf21-mutant/1_fgf21-v16/fgf21-v16-s2-cp.prot.prmcrd [prot]
+
+trajin 1_run/4_gamd_init.1.nc 1001 11000 100    # 500 frames for 1ns
+trajin 1_run/5_gamd.1.nc 1 25000 100
+trajin 1_run/5_gamd.2.nc 1 25000 100
+trajin 1_run/5_gamd.3.nc 1 25000 100
+trajin 1_run/5_gamd.4.nc 1 25000 100
+trajin 1_run/5_gamd.5.nc 1 25000 100
+trajin 1_run/5_gamd.6.nc 1 25000 100
+trajin 2_run/4_gamd_init.1.nc 1001 11000 100
+trajin 2_run/5_gamd.1.nc 1 25000 100
+trajin 2_run/5_gamd.2.nc 1 25000 100
+trajin 2_run/5_gamd.3.nc 1 25000 100
+trajin 2_run/5_gamd.4.nc 1 25000 100
+trajin 2_run/5_gamd.5.nc 1 25000 100
+trajin 2_run/5_gamd.6.nc 1 25000 100
+
+autoimage
+
+rmsd :2-10@CA,N,C,O out fgf21-v16-s2-cp.all.rmsd.txt mass ref [prot] :2-10@CA,N,C,O
+#rmsf byres out fgf21-v16-s2-cp.all.rmsf.txt
+
+#rmsd :6-10@CA,N,C,O out fgf21-v16-s2-cp.all.204-208.rmsd.txt mass ref [prot] :6-10@CA,N,C,O
+#rmsf byres out fgf21-v16-s2-cp.all.204-208.rmsf.txt
+#rmsd :2-6@CA,N,C,O  out fgf21-v16-s2-cp.all.200-204.rmsd.txt nofit mass ref [prot] :2-6@CA,N,C,O
+
+#radgyr rg mass out fgf21-v16-s2-cp.all.gyration.txt
+
+## specific backbone H-bond distances
+#distance d1 :10@H :6@O out fgf21-v16-s2-cp.all.dist_s204-w208.txt
+#distance d2 :10@H :7@O out fgf21-v16-s2-cp.all.dist_p205-w208.txt
+#distance d3  :9@H :6@O out fgf21-v16-s2-cp.all.dist_s204-w207.txt
+#distance d4 :11@H :8@O out fgf21-v16-s2-cp.all.dist_s206-s209.txt
+
+## pi and h interaction distances
+#distance p1 :5@CD2,CE2,CE3,CH2,CZ2,CZ3 :10@CD2,CE2,CE3,CH2,CZ2,CZ3 \
+#  out fgf21-v16-s2-cp.all.pi2_w203-w208.txt
+#distance p2 :5&!@H=,CA,CB,C,N,O :10&!@H=,CA,CB,C,N,O \
+#  out fgf21-v16-s2-cp.all.pi_w203-w208.txt
+#distance p3 :5@CD2,CE2,CE3,CH2,CZ2,CZ3 :9@CD2,CE2,CE3,CH2,CZ2,CZ3 \
+#  out fgf21-v16-s2-cp.all.pi2_w203-w207.txt
+#distance p4 :5&!@H=,CA,CB,C,N,O  :9&!@H=,CA,CB,C,N,O \
+#  out fgf21-v16-s2-cp.all.pi_w203-w207.txt
+
+#distance h1 :5@O :10@HE1 \
+#  out fgf21-v16-s2-cp.all.nh_w203-w208.txt
+#distance h2 :5@O :10&!@CB,CA,C,N,O,H= \
+#  out fgf21-v16-s2-cp.all.sb_w203-w208.txt
+
+## backbone torsion angles
+multidihedral phi psi resrange 6-11 out fgf21-v16-s2-cp.all.phi-psi.txt
+#secstruct ss1 :1-11 out fgf21-v16-s2-cp.all.dssp.txt
+#secstruct ss2 :1-11 out fgf21-v16-s2-cp.all.dssp.gnu
+#secstruct ss3 :1-11 sumout fgf21-v16-s2-cp.all.dssp.txt
+
+trajout fgf21-v16-s2-cp.all.2ns.dcd
+

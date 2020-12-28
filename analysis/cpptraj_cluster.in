@@ -1,0 +1,26 @@
+parm      ../../1_setup/fgf19-wt/sKLB-19CT.190-205.prot.prmtop
+reference ../../1_setup/fgf19-wt/sKLB-19CT.190-205.prot.prmcrd [prot]
+
+trajin ./1_run/4_gamd_init.1-1.nc 2001 22000 1  # 1000 frames = 1ns
+trajin ./1_run/5_gamd.all_200ns.nc 1 200000 1
+trajin ./2_run/4_gamd_init.1-1.nc 2001 22000 1
+trajin ./2_run/5_gamd.all_200ns.nc 1 200000 1
+trajin ../fgf19-wt-compact/1_run/4_gamd_init.1-1.nc 2001 22000 1
+trajin ../fgf19-wt-compact/1_run/5_gamd.all_200ns.nc 1 200000 1
+trajin ../fgf19-wt-compact/2_run/4_gamd_init.1-1.nc 2001 22000 1
+trajin ../fgf19-wt-compact/2_run/5_gamd.all_200ns.nc 1 200000 1
+
+autoimage
+
+rmsd :3-13@C,CA,N,O mass ref [prot] :3-13@C,CA,N,O
+
+cluster c1 dbscan rms :3-13@C,CA,N,O sieve 50 random sieveseed 5 \
+#         kdist 15 \
+         minpoints 50 epsilon 0.8 \
+        repframe repout fgf19-s1-wt.dbscan.cluster repfmt pdb \
+        summary fgf19-s1-wt.dbscan.summary.dat
+
+
+
+go
+

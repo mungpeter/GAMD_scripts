@@ -154,7 +154,7 @@ def gamd_reweight_2d(   combiname='', data={}, weights=[], dV=[],
 
 ##########################################################################
 ### PLOTTING FUNCTION FOR FREE ENERGY FIGURE, smoothed with cubic spline
-### interpolation
+### interpolation; 2d-histogram is unstacked matrix [dx, dy]
     if plt_figs :
         # plot with relative energy; *-t designation means no background 
         # color, showing only area that's been sampling in GAMD
@@ -251,6 +251,8 @@ def prephist(hist2, T, e_max):
 
 
 ##########################################################################
+## PLOTTING FUNCTION FOR FREE ENERGY FIGURE, smoothed with cubic spline
+## interpolation; use unstacked matrix [dx, dy] 2d-histogram
 def PlotLandscape(  hist2, weights, newedgesX, newedgesY, binsX, binsY, 
                     e_max, c_step, xlabel, ylabel, bar_label, combiname,
                     plot_type, bar_extend, plot_extend, smooth, dpi, img ):

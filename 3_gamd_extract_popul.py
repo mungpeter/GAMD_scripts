@@ -111,6 +111,7 @@ class CollectPopulation(object):
     ## create a T/F list of occurrnace in the given X/Y-range as (within)
     ## then create a dataframe with all zeros as long as dataframe
     ## replace the zeros if corresponding position in (within) is True
+    ## This is done to avoid data point outside of range messing up calculations
     df = pd.DataFrame(self.data, columns=['x', 'y'])
     within = ((df.x.to_numpy() >= Xrange[0]) & (df.x.to_numpy() < Xrange[-1]) &
               (df.y.to_numpy() >= Yrange[0]) & (df.y.to_numpy() < Yrange[-1]) )
