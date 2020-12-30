@@ -262,8 +262,8 @@ def PlotLandscape(  hist2, weights, newedgesX, newedgesY, binsX, binsY,
         # using Gaussian filter based on cubic spline interpoluation to 
         # smoothen the matrix date to remove sharp edges in contour
         # x-/y-axes can be of difference scale and need independent smoothening
-        Sigma  = [  (max(binsX)-min(binsX))*smooth/(len(binsX)), 
-                    (max(binsY)-min(binsY))*smooth/(len(binsY)) ]
+        Sigma  = [  ( max(binsX)-min(binsX) )*smooth / len(binsX), 
+                    ( max(binsY)-min(binsY) )*smooth / len(binsY) ]
         smooth_hist2 = ndimage.filters.gaussian_filter(hist2, sigma=Sigma)
     else:
         smooth_hist2 = hist2       # no smoothening
@@ -288,7 +288,11 @@ def PlotLandscape(  hist2, weights, newedgesX, newedgesY, binsX, binsY,
     # Contour levels, set to be 'c_step' the Emax value, default is 4x
     print('\033[34me_max:\033[0m ', e_max)
     print('\033[34mc_step:\033[0m ', c_step)
-    levels = (np.linspace( 0, e_max, num=int(e_max*c_step)+1 ))
+    if plot_type == 'dG':
+        levels = (np.linspace( 0, e_max, num=int(e_max*c_step)+1 ))
+    else:
+        flat_smooth = np.sort( list(set(smooth_hist2.flatten())) )
+        levels = np.linspace( flat_smooth[1], flat_smooth[-1], num=int(e_max*c_step)+1 )
     print('\033[34mplt_fig levels:\033[0m '),
     print((levels))
 
