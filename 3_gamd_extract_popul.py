@@ -20,7 +20,8 @@ if int(pd.__version__.split('.')[1]) < 24:
 #  v.2  19.04.25  do multiple collections with list of X/Y ranges
 #  v.3  19.12.09  pandas vectorization in counting
 #
-#  print out the % population in trajectory in the ranges defined by X-Y axis
+#  Read in separate X- and Y-axis files, combine them (same no. of row) and
+#  calculate the % population in trajectory in the ranges defined by X-Y axis
 #
 ##  where the data is in 2D-matrix, and bin is defined by the upper end of
 ##  the range, i.e. range is [0,1,2,3] but data is binned in [0-1, 1-2, 2-3]
@@ -32,9 +33,9 @@ if int(pd.__version__.split('.')[1]) < 24:
   # 3.5 5.0 : 10 15     # population_2: x-range [3.5,5.0]; y-range [10, 15]
 #####  
 #
-#  e.g.> x.py -in     rmsd_file.txt distance_file.txt
-#             -col    2
-#             -list   multi_ranges.list
+#  e.g.> x.py -in   rmsd_file.txt distance_file.txt   <- x- and y-axis files
+#             -col  2
+#             -list multi_ranges.list
 #               *or*
 #             -xrange 1.0 3.0
 #             -yrange 0.0 4.0
@@ -57,7 +58,7 @@ def main():
 
 ######################
 
-  # Parse input data then count Frequency of Occurrence in the bins
+  # Parse input data w/ Numpy then count Frequency of Occurrence in the bins
   Data      = LoadFileToArray(args.input,args.col, skip=int(args.skip),pwd=pwd)
   Frequency = CollectPopulation(data=Data)
 
