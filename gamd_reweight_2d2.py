@@ -164,7 +164,7 @@ def gamd_reweight_2d(   combiname='', data={}, weights=[], dV=[],
 #                       'dG',   'min',     'max',     smooth, dpi, img )
         PlotLandscape(  hist2, weights, newedgesX, newedgesY, binsX, binsY, 
                         e_max, c_step, xlabel, ylabel, bar_label, combiname,
-                        'dG-t', 'neither', 'neither', smooth, dpi, img )
+                        'dG-t', 'neither', 'neither', smooth, False, dpi, img )
 
         # plot with % population in simulation, p_max replace e_max for sidebar
         # because population can vary from very small to very large, get upper
@@ -187,7 +187,7 @@ def gamd_reweight_2d(   combiname='', data={}, weights=[], dV=[],
         bar_label = '% Population'
         PlotLandscape(  popul, weights, newedgesX, newedgesY, binsX, binsY, 
                         p_max, p_step, xlabel, ylabel, bar_label, combiname,
-                        'popul',   'min',     'max', smooth, dpi, img )
+                        'popul',   'min',     'max', smooth, True, dpi, img )
 #        PlotLandscape(  popul, weights, newedgesX, newedgesY, binsX, binsY, 
 #                        p_max, p_step, xlabel, ylabel, bar_label, combiname,
 #                        'popul-t', 'neither', 'max', smooth, dpi, img )
@@ -255,7 +255,7 @@ def prephist(hist2, T, e_max):
 ## interpolation; use unstacked matrix [dx, dy] 2d-histogram
 def PlotLandscape(  hist2, weights, newedgesX, newedgesY, binsX, binsY, 
                     e_max, c_step, xlabel, ylabel, bar_label, combiname,
-                    plot_type, bar_extend, plot_extend, smooth, dpi, img ):
+                    plot_type, bar_extend, plot_extend, smooth, hidelow, dpi, img ):
 
 #    print(xlabel, '   |   ', ylabel)
     if smooth is not None:
@@ -288,9 +288,9 @@ def PlotLandscape(  hist2, weights, newedgesX, newedgesY, binsX, binsY,
     # Contour levels, set to be 'c_step' the Emax value, default is 4x
     print('\033[34me_max:\033[0m ', e_max)
     print('\033[34mc_step:\033[0m ', c_step)
-    if plot_type == 'dG':
+    if not hidelow:  # scale starting from 0 to e_max; hide coloring > e_max
         levels = (np.linspace( 0, e_max, num=int(e_max*c_step)+1 ))
-    else:
+    else:  # hide coloring of lowest population, starting from next lowest
         flat_smooth = np.sort( list(set(smooth_hist2.flatten())) )
         levels = np.linspace( flat_smooth[1], flat_smooth[-1], num=int(e_max*c_step)+1 )
     print('\033[34mplt_fig levels:\033[0m '),
